@@ -1,80 +1,63 @@
-@extends('layouts.app')
+<x-app-layout>
 
-@section('content')
-    <div class="card shadow">
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            User Management
+        </h2>
+    </x-slot>
 
-        <div class="card-header d-flex justify-content-between">
+    <div class="container py-4">
 
-            <h3>Users</h3>
+        <form method="GET" class="mb-3">
+            <input type="text" name="search" value="{{ $search }}" class="form-control"
+                placeholder="Search users...">
+        </form>
 
-            <a href="{{ route('users.create') }}" class="btn btn-primary">
-                Add User
-            </a>
+        <a href="{{ route('users.create') }}" class="btn btn-primary mb-3">
+            Add User
+        </a>
 
-        </div>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th width="180">Actions</th>
+                </tr>
+            </thead>
 
-        <div class="card-body">
-
-            <table class="table table-bordered table-hover">
-
-                <thead class="table-dark">
-
+            <tbody>
+                @foreach ($users as $user)
                     <tr>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ ucfirst($user->role) }}</td>
+                        <td>
+                            <a href="{{ route('users.edit', $user) }}" class="btn btn-warning btn-sm">
+                                Edit
+                            </a>
 
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Role</th>
-                        <th>Action</th>
+                            <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
 
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    @foreach ($users as $user)
-                        <tr>
-
-                            <td>{{ $user->id }}</td>
-                            <td>{{ $user->name }}</td>
-                            <td>{{ $user->email }}</td>
-                            <td>{{ $user->phone }}</td>
-                            <td>
-
-                                @if ($user->role == 'admin')
-                                    <span class="badge bg-danger">
-                                        Admin
-                                    </span>
-                                @else
-                                    <span class="badge bg-success">
-                                        User
-                                    </span>
-                                @endif
-
-                            </td>
-
-                            <td>
-
-                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">
-                                    Edit
-                                </a>
+                                @csrf
+                                @method('DELETE')
 
                                 <button class="btn btn-danger btn-sm">
                                     Delete
                                 </button>
 
-                            </td>
+                            </form>
 
-                        </tr>
-                    @endforeach
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
 
-                </tbody>
+        </table>
 
-            </table>
-
-        </div>
+        {{ $users->links() }}
 
     </div>
-@endsection
+
+</x-app-layout>

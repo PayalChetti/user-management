@@ -5,16 +5,26 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+
+
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()->get();
-        return view('users.index', compact('users'));
+        $search = $request->search;
+
+        $users = User::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('role', 'like', "%{$search}%");
+        })->paginate(10);
+
+        return view('users.index', compact('users', 'search'));
     }
 
     /**
@@ -43,6 +53,7 @@ class UserController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'role' => $request->role,
+            'created_by' => Auth::id(),
             'password' => Hash::make($request->password),
         ]);
 
@@ -74,11 +85,10 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable',
             'role' => 'required',
         ]);
 
-        $user->update($request->all());
+        $user->update($request->only('name', 'email', 'role'));
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
